@@ -15,15 +15,18 @@ function App() {
     setProducts([...products, newProduct]);
   }
 
-<>
-  <NavBar />
-  <Routes>
-    <Route path="/" element={<HomePage />} />
-    <Route path="/products" element={<ProductListingPage products={products} />} />
-    <Route path="/products/:id" element={<ProductDetailsPage products={products} />} />
-    <Route path="/add" element={<AddProductPage onAddProduct={handleAddProduct} />} />
-    <Route path="/edit/:id" element={<EditProductPage products={products} setProducts={setProducts} />} />
-  </Routes>
-</>
+  return (
+    <Router>
+      <NavBar />
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/products" element={<ProductListingPage products={products} />} />
+        <Route path="/products/:id" element={<ProductDetailsPage products={products} />} />
+        <Route path="/add" element={<AddProductPage onAddProduct={handleAddProduct} />} />
+        <Route path="/edit/:id" element={<EditProductPage products={products} setProducts={setProducts} />} />
+      </Routes>
+    </Router>
+  );
 }
+
 export default App;
