@@ -1,48 +1,85 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import DeleteConfirmationModal from './DeleteConfirmationModal';
-import { Button } from 'react-bootstrap'; 
+import { Button, Card, Row, Col, Spinner, Alert, Container } from 'react-bootstrap';
 
 function ProductListingPage (){
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   // Fetch products from your backend when this component loads
   useEffect(() => {
-    fetch('https://fakestoreapi.com/products') // Replace with your real API endpoint
+    fetch('https://fakestoreapi.com/products')
       .then((res) => res.json())
-      .then((data) => setProducts(data))
-      .catch((err) => console.error('Failed to load products', err));
+      .then((data) => {
+        setProducts(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError('Failed to load products');
+        setLoading(false);
+      });
   }, []);
 const handleDelete = (id) => {
-  console.log('Deleting product with ID:', id);
-  // TODO: remove item from state or call API
+  // FakeStoreAPI: simulate delete
+  fetch(`https://fakestoreapi.com/products/${id}`, { method: 'DELETE' })
+    .then(() => {
+      setProducts(products.filter((p) => p.id !== id));
+    })
+    .catch(() => setError('Failed to delete product'));
 };
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Product List</h2>
-      {products.length === 0 ? (
-        <p>No products found.</p>
-      ) : (
-        <ul className="space-y-4">
+    <Container className="py-4">
+      <h2 className="mb-4">Product List</h2>
+      {loading && <Spinner animation="border" />}
+      {error && <Alert variant="danger">{error}</Alert>}
+      {!loading && !error && (
+        <Row xs={1} md={2} lg={3} className="g-4">
           {products.map((product) => (
-            <li key={product.id} className="border p-4 rounded shadow">
-              <h3 className="text-lg font-semibold">{product.title}</h3>
-              <p className="text-sm">{product.description}</p>
-              <p className="text-sm font-bold">${product.price}</p>
-              <Button variant="danger" onClick={() => {setSelectedProduct(product); setShowModal(true);}}>Delete</Button>
-              <Link
-                to={`/products/${product.id}`}
-                className="text-blue-500 underline"
-              >
-                View Details
-              </Link>
-            </li>
+            <Col key={product.id}>
+              <Card className="h-100">
+                <Card.Img variant="top" src={product.image} style={{ objectFit: 'contain', height: '200px' }} />
+                <Card.Body>
+                  <Card.Title>{product.title}</Card.Title>
+                  <Card.Text>
+                    <strong>${product.price}</strong>
+                  </Card.Text>
+                  <Button
+                    as={Link}
+                    to={`/products/${product.id}`}
+                    variant="primary"
+                    className="me-2"
+                  >
+                    View Details
+                  </Button>
+                  <Button
+                    variant="danger"
+                    onClick={() => {
+                      setSelectedProduct(product);
+                      setShowModal(true);
+                    }}
+                  >
+                    Delete
+                  </Button>
+                </Card.Body>
+              </Card>
+            </Col>
           ))}
-        </ul>
-      )}<DeleteConfirmationModal show={showModal} onHide={() => setShowModal(false)} onConfirm={() => {handleDelete(selectedProduct.id); setShowModal(false);}} itemName={selectedProduct?.title}/>
-    </div>
+        </Row>
+      )}
+      <DeleteConfirmationModal
+        show={showModal}
+        onHide={() => setShowModal(false)}
+        onConfirm={() => {
+          handleDelete(selectedProduct.id);
+          setShowModal(false);
+        }}
+        itemName={selectedProduct?.title}
+      />
+    </Container>
   );
 };
 
